@@ -1,42 +1,116 @@
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
-import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
-import * as SplashScreen from "expo-splash-screen";
-import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
-import { useColorScheme } from "react-native";
+import { listsTable } from "@/db/schema";
+import migrations from "@/drizzle/migrations";
+import { eq } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/expo-sqlite";
+import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
+import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
+import * as SQLite from "expo-sqlite";
+import { useEffect, useState } from "react";
+import { Pressable, Text, View } from "react-native";
 import "react-native-reanimated";
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+const expo = SQLite.openDatabaseSync("db.db");
+const db = drizzle(expo);
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
-  });
+  const { success, error } = useMigrations(db, migrations);
+  useDrizzleStudio(expo);
+  const [items, setItems] = useState<(typeof listsTable.$inferSelect)[] | null>(
+    null,
+  );
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
+    if (!success) return;
+    (async () => {
+      const lists = await db.select().from(listsTable);
+      setItems(lists);
+    })();
+  }, [success]);
 
-  if (!loaded) {
-    return null;
+  async function remove(id: number) {
+    await db.delete(listsTable).where(eq(listsTable.id, id));
+    const lists = await db.select().from(listsTable);
+    setItems(lists);
+  }
+
+  async function add(props: typeof listsTable.$inferInsert) {
+    await db.insert(listsTable).values(props);
+    const lists = await db.select().from(listsTable);
+    setItems(lists);
+  }
+
+  if (error) {
+    return (
+      <View>
+        <Text style={{ color: "white" }}>Migration error: {error.message}</Text>
+      </View>
+    );
+  }
+
+  if (!success) {
+    return (
+      <View>
+        <Text style={{ color: "white" }}>Migration is in progress...</Text>
+      </View>
+    );
+  }
+
+  if (items === null || items.length === 0) {
+    return (
+      <View
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          width: "100%",
+          height: "100%",
+          justifyContent: "center",
+        }}
+      >
+        <Text style={{ color: "white" }}>Empty</Text>
+
+        <Pressable
+          onPress={() =>
+            add({
+              name: "test",
+              age: 21,
+              email: "test@user.com",
+            })
+          }
+        >
+          <Text style={{ color: "yellow" }}>Add</Text>
+        </Pressable>
+      </View>
+    );
   }
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <View
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        width: "100%",
+        height: "100%",
+        justifyContent: "center",
+        gap: "12",
+      }}
+    >
+      {items.map((item, index) => (
+        <Pressable key={index} onPress={() => remove(item.id)}>
+          <Text style={{ color: "white" }}>{item.name}</Text>
+        </Pressable>
+      ))}
+
+      <Pressable
+        onPress={() =>
+          add({
+            name: "test2",
+          })
+        }
+      >
+        <Text style={{ color: "yellow" }}>Add</Text>
+      </Pressable>
+    </View>
   );
 }

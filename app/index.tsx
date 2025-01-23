@@ -1,42 +1,65 @@
-import { Theme, useTheme } from "@react-navigation/native";
-import { drizzle } from "drizzle-orm/expo-sqlite";
-import { Link } from "expo-router";
-import * as SQLite from "expo-sqlite";
-import { SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { listsTable } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { useEffect, useState } from "react";
+import { Pressable, Text, View } from "react-native";
+import { db } from "~/lib/db";
 
-const expo = SQLite.openDatabaseSync("db.db");
-const db = drizzle(expo);
+export default function HomeScreen() {
+  const [items, setItems] = useState<(typeof listsTable.$inferSelect)[] | null>(null);
 
-export default function HomeScreen(props: {
-  setTheme: (value: string) => void;
-}) {
-  const theme = useTheme();
-  const styles = getStyles(theme);
+  useEffect(() => {
+    (async () => {
+      const lists = await db.select().from(listsTable);
+      setItems(lists);
+    })();
+  }, []);
+
+  async function remove(id: number) {
+    await db.delete(listsTable).where(eq(listsTable.id, id));
+    const lists = await db.select().from(listsTable);
+    setItems(lists);
+  }
+
+  async function add(props: typeof listsTable.$inferInsert) {
+    await db.insert(listsTable).values(props);
+    const lists = await db.select().from(listsTable);
+    setItems(lists);
+  }
+
+  if (items === null || items.length === 0) {
+    return (
+      <View>
+        <Text>Empty</Text>
+        <Pressable
+          onPress={() =>
+            add({
+              name: "test",
+            })
+          }
+        >
+          <Text>Add</Text>
+        </Pressable>
+      </View>
+    );
+  }
 
   return (
-    <SafeAreaView>
-      <View>
-        <Text style={styles.text}>Home</Text>
-        <Text style={styles.text}>Home</Text>
-        <Text style={styles.text}>Home</Text>
-        <Text style={styles.text}>Home</Text>
-        <Text style={styles.text}>Home</Text>
-        <Text style={styles.text}>Home</Text>
-        <Text style={styles.text}>Home</Text>
-        <Link style={styles.link} href="/lists/1">
-          List 1
-        </Link>
-      </View>
-    </SafeAreaView>
+    <View>
+      {items.map((item, index) => (
+        <Pressable key={index} onPress={() => remove(item.id)}>
+          <Text>{item.name}</Text>
+        </Pressable>
+      ))}
+
+      <Pressable
+        onPress={() =>
+          add({
+            name: "test2",
+          })
+        }
+      >
+        <Text>Add</Text>
+      </Pressable>
+    </View>
   );
 }
-
-const getStyles = (theme: Theme) =>
-  StyleSheet.create({
-    text: {
-      color: theme.colors.text,
-    },
-    link: {
-      color: theme.colors.primary,
-    },
-  });

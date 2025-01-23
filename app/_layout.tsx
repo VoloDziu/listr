@@ -1,7 +1,7 @@
 import migrations from "@/drizzle/migrations";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
-import { Slot } from "expo-router";
+import { Stack } from "expo-router";
 import "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text } from "~/components/ui/text";
@@ -30,7 +30,7 @@ export default function RootLayout() {
 
   return (
     <SafeAreaView className="flex-1">
-      <Slot />
+      <Stack screenOptions={{ headerShown: false }} />
     </SafeAreaView>
   );
 }

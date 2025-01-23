@@ -1,7 +1,7 @@
 import { listsTable } from "@/db/schema";
-import { router } from "expo-router";
-import { useState } from "react";
-import { View } from "react-native";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useRef, useState } from "react";
+import { TextInput, View } from "react-native";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
@@ -9,6 +9,17 @@ import { db } from "~/lib/db";
 
 export default function NewItemScreen() {
   const [name, setName] = useState("");
+  const inputRef = useRef<TextInput>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      const timeout = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+
+      return () => clearTimeout(timeout);
+    }, [])
+  );
 
   async function add() {
     if (!name.trim()) return;
@@ -17,14 +28,15 @@ export default function NewItemScreen() {
       name: name.trim(),
     });
 
-    router.back();
+    router.dismissTo("/");
   }
 
   return (
-    <View className="flex-grow">
+    <View className="flex-grow bg-background">
       <View className="flex-grow p-4">
         <Text className="mb-2">Name</Text>
         <Input
+          ref={inputRef}
           value={name}
           onChangeText={setName}
           placeholder="Enter name"

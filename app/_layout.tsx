@@ -1,9 +1,10 @@
 import migrations from "@/drizzle/migrations";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
-import { View, Text } from "react-native";
-import "react-native-reanimated";
 import { Slot } from "expo-router";
+import "react-native-reanimated";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Text } from "~/components/ui/text";
 import { db, expo } from "~/lib/db";
 import "../global.css";
 
@@ -13,19 +14,23 @@ export default function RootLayout() {
 
   if (error) {
     return (
-      <View>
-        <Text style={{ color: "white" }}>Migration error: {error.message}</Text>
-      </View>
+      <SafeAreaView>
+        <Text>Migration error: {error.message}</Text>
+      </SafeAreaView>
     );
   }
 
   if (!success) {
     return (
-      <View>
-        <Text style={{ color: "white" }}>Migration is in progress...</Text>
-      </View>
+      <SafeAreaView>
+        <Text>Migration is in progress...</Text>
+      </SafeAreaView>
     );
   }
 
-  return <Slot />;
+  return (
+    <SafeAreaView className="flex-1">
+      <Slot />
+    </SafeAreaView>
+  );
 }

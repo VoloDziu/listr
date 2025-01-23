@@ -1,11 +1,16 @@
 import { listsTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { View } from "react-native";
+import { Button } from "~/components/ui/button";
+import { Text } from "~/components/ui/text";
 import { db } from "~/lib/db";
 
 export default function HomeScreen() {
-  const [items, setItems] = useState<(typeof listsTable.$inferSelect)[] | null>(null);
+  const [items, setItems] = useState<(typeof listsTable.$inferSelect)[] | null>(
+    null,
+  );
 
   useEffect(() => {
     (async () => {
@@ -20,46 +25,36 @@ export default function HomeScreen() {
     setItems(lists);
   }
 
-  async function add(props: typeof listsTable.$inferInsert) {
-    await db.insert(listsTable).values(props);
-    const lists = await db.select().from(listsTable);
-    setItems(lists);
-  }
-
   if (items === null || items.length === 0) {
     return (
-      <View>
-        <Text>Empty</Text>
-        <Pressable
-          onPress={() =>
-            add({
-              name: "test",
-            })
-          }
-        >
-          <Text>Add</Text>
-        </Pressable>
+      <View className="flex-grow">
+        <View className="flex-grow items-center justify-center">
+          <Text>Empty</Text>
+        </View>
+        <View className="p-4">
+          <Button onPress={() => router.push("/new")}>
+            <Text>Add (empty)</Text>
+          </Button>
+        </View>
       </View>
     );
   }
 
   return (
-    <View>
-      {items.map((item, index) => (
-        <Pressable key={index} onPress={() => remove(item.id)}>
-          <Text>{item.name}</Text>
-        </Pressable>
-      ))}
+    <View className="flex-grow">
+      <View className="flex-grow">
+        {items.map((item, index) => (
+          <Button key={index} onPress={() => remove(item.id)} variant="link">
+            <Text>{item.name}</Text>
+          </Button>
+        ))}
+      </View>
 
-      <Pressable
-        onPress={() =>
-          add({
-            name: "test2",
-          })
-        }
-      >
-        <Text>Add</Text>
-      </Pressable>
+      <View className="p-4">
+        <Button onPress={() => router.push("/new")}>
+          <Text>Add</Text>
+        </Button>
+      </View>
     </View>
   );
 }

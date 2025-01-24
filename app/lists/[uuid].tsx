@@ -2,13 +2,15 @@ import { listsTable, todosTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
-import { FlatList, View } from "react-native";
+import { FlatList, KeyboardAvoidingView, Platform, View } from "react-native";
 import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
 import { db } from "~/lib/db";
 
 export default function List() {
   const { uuid } = useLocalSearchParams();
+  const [newTodo, setNewTodo] = useState("");
   const [list, setList] = useState<
     | undefined
     | (typeof listsTable.$inferSelect & {
@@ -27,6 +29,23 @@ export default function List() {
     setList(result);
   }
 
+  async function addTodo() {
+    if (!newTodo.trim() || !list) return;
+
+    await db.insert(todosTable).values({
+      name: newTodo.trim(),
+      listId: list.id,
+    });
+
+    setNewTodo("");
+    loadList();
+  }
+
+  async function deleteTodo(todoId: number) {
+    await db.delete(todosTable).where(eq(todosTable.id, todoId));
+    loadList();
+  }
+
   useEffect(() => {
     loadList();
   }, [uuid]);
@@ -36,7 +55,11 @@ export default function List() {
   }
 
   return (
-    <View className="flex-1 bg-background">
+    <KeyboardAvoidingView
+      keyboardVerticalOffset={64}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      className="flex-1 bg-background"
+    >
       <View className="p-4 border-b border-border">
         <View className="flex-row items-center gap-2">
           <Button variant="ghost" size="sm" onPress={() => router.back()}>
@@ -50,15 +73,12 @@ export default function List() {
         data={list.todos ?? []}
         keyExtractor={(todo) => todo.id.toString()}
         renderItem={({ item: todo }) => (
-          <View className="flex-row items-center p-4 border-b border-border">
+          <View className="flex-row items-center px-4 py-2">
             <Text className="flex-1">{todo.name}</Text>
             <Button
               variant="destructive"
               size="sm"
-              onPress={async () => {
-                await db.delete(todosTable).where(eq(todosTable.id, todo.id));
-                loadList();
-              }}
+              onPress={() => deleteTodo(todo.id)}
             >
               <Text>Delete</Text>
             </Button>
@@ -75,10 +95,21 @@ export default function List() {
       />
 
       <View className="p-4 border-t border-border">
-        <Button onPress={() => router.push("/new")}>
-          <Text>Add item</Text>
-        </Button>
+        <View className="flex-row gap-2">
+          <Input
+            className="flex-1"
+            placeholder="Add a todo..."
+            value={newTodo}
+            onChangeText={setNewTodo}
+            onSubmitEditing={addTodo}
+            returnKeyType="done"
+            blurOnSubmit={false}
+          />
+          <Button onPress={addTodo}>
+            <Text>Add</Text>
+          </Button>
+        </View>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }

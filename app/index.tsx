@@ -12,7 +12,6 @@ type ListItem = typeof listsTable.$inferSelect;
 function EmptyList() {
   return (
     <View className="flex-grow items-center justify-center">
-      <Text className="mb-2">No lists yet</Text>
       <Button onPress={() => router.push("/new")}>
         <Text>Create your first list</Text>
       </Button>
@@ -71,7 +70,7 @@ export default function HomeScreen() {
 
           <View className="p-4 shrink-0">
             <Button onPress={() => router.push("/new")}>
-              <Text>Add 2</Text>
+              <Text>Add 23</Text>
             </Button>
           </View>
         </>

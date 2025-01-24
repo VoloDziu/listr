@@ -23,7 +23,7 @@ export default function HomeScreen() {
   const [items, setItems] = useState<ListItem[] | null>(null);
 
   const loadItems = useCallback(async () => {
-    const lists = await db.select().from(listsTable);
+    const lists = await db.query.listsTable.findMany();
     setItems(lists);
   }, []);
 
@@ -70,7 +70,7 @@ export default function HomeScreen() {
 
           <View className="p-4 shrink-0">
             <Button onPress={() => router.push("/new")}>
-              <Text>Add 23</Text>
+              <Text>Add 243</Text>
             </Button>
           </View>
         </>

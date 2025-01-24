@@ -2,7 +2,13 @@ import { listsTable, todosTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
-import { FlatList, KeyboardAvoidingView, Platform, View } from "react-native";
+import {
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  View,
+} from "react-native";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
@@ -35,6 +41,7 @@ export default function List() {
     await db.insert(todosTable).values({
       name: newTodo.trim(),
       listId: list.id,
+      completed: 0,
     });
 
     setNewTodo("");
@@ -43,6 +50,14 @@ export default function List() {
 
   async function deleteTodo(todoId: number) {
     await db.delete(todosTable).where(eq(todosTable.id, todoId));
+    loadList();
+  }
+
+  async function toggleTodo(todoId: number, completed: number) {
+    await db
+      .update(todosTable)
+      .set({ completed: completed ? 0 : 1 })
+      .where(eq(todosTable.id, todoId));
     loadList();
   }
 
@@ -73,8 +88,22 @@ export default function List() {
         data={list.todos ?? []}
         keyExtractor={(todo) => todo.id.toString()}
         renderItem={({ item: todo }) => (
-          <View className="flex-row items-center px-4 py-2">
-            <Text className="flex-1">{todo.name}</Text>
+          <View className="flex-row items-center px-4">
+            <Pressable
+              onPress={() => toggleTodo(todo.id, todo.completed)}
+              className="flex-1 flex-row items-center border-border border py-3"
+            >
+              <View className="w-5 h-5 rounded border border-border mr-3 items-center justify-center">
+                {todo.completed ? <Text className="text-sm">✓</Text> : null}
+              </View>
+              <Text
+                className={
+                  todo.completed ? "line-through text-muted-foreground" : ""
+                }
+              >
+                {todo.name}
+              </Text>
+            </Pressable>
             <Button
               variant="destructive"
               size="sm"

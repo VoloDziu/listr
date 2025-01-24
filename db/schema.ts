@@ -14,6 +14,7 @@ export const todosTable = sqliteTable("todos_table", {
   id: int().primaryKey({ autoIncrement: true }),
   name: text().notNull(),
   listId: int(),
+  completed: int().default(0),
 });
 
 export const todosRelations = relations(todosTable, ({ one }) => ({

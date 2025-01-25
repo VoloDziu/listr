@@ -13,8 +13,8 @@ export const listsRelations = relations(listsTable, ({ many }) => ({
 export const todosTable = sqliteTable("todos_table", {
   id: int().primaryKey({ autoIncrement: true }),
   name: text().notNull(),
-  listId: int(),
-  completed: int().default(0),
+  listId: int().notNull(),
+  completed: int().default(0).notNull(),
 });
 
 export const todosRelations = relations(todosTable, ({ one }) => ({

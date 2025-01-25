@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
 import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
 import { db } from "~/lib/db";
@@ -77,7 +78,7 @@ export default function List() {
     >
       <View className="p-4 border-b border-border">
         <View className="flex-row items-center gap-2">
-          <Button variant="ghost" size="sm" onPress={() => router.back()}>
+          <Button variant="ghost" size="icon" onPress={() => router.back()}>
             <Text>←</Text>
           </Button>
           <Text className="text-lg font-medium">{list.name}</Text>
@@ -87,15 +88,22 @@ export default function List() {
       <FlatList
         data={list.todos ?? []}
         keyExtractor={(todo) => todo.id.toString()}
+        className="py-2"
         renderItem={({ item: todo }) => (
           <View className="flex-row items-center px-4">
             <Pressable
               onPress={() => toggleTodo(todo.id, todo.completed)}
-              className="flex-1 flex-row items-center border-border border py-3"
+              className="flex-1 flex-row items-center py-3 gap-4"
             >
-              <View className="w-5 h-5 rounded border border-border mr-3 items-center justify-center">
+              <Checkbox
+                checked={!!todo.completed}
+                onCheckedChange={(checked) =>
+                  toggleTodo(todo.id, todo.completed)
+                }
+              />
+              {/* <View className="w-5 h-5 rounded border border-border mr-3 items-center justify-center">
                 {todo.completed ? <Text className="text-sm">✓</Text> : null}
-              </View>
+              </View> */}
               <Text
                 className={
                   todo.completed ? "line-through text-muted-foreground" : ""

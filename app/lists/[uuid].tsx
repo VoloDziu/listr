@@ -1,7 +1,7 @@
 import { listsTable, todosTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -9,11 +9,20 @@ import {
   Pressable,
   View,
 } from "react-native";
+import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
 import { db } from "~/lib/db";
+
+const RightActions = ({ onDelete }: { onDelete: () => void }) => {
+  return (
+    <Button onPress={onDelete} variant="destructive" size="sm">
+      <Text className="text-foreground">Delete</Text>
+    </Button>
+  );
+};
 
 export default function List() {
   const { uuid } = useLocalSearchParams();
@@ -25,6 +34,7 @@ export default function List() {
       })
     | null
   >(null);
+  const swipeableRefs = useRef<{ [key: string]: Swipeable | null }>({});
 
   async function loadList() {
     const result = await db.query.listsTable.findFirst({
@@ -90,36 +100,40 @@ export default function List() {
         keyExtractor={(todo) => todo.id.toString()}
         className="py-2"
         renderItem={({ item: todo }) => (
-          <View className="flex-row items-center px-4">
-            <Pressable
-              onPress={() => toggleTodo(todo.id, todo.completed)}
-              className="flex-1 flex-row items-center py-3 gap-4"
-            >
-              <Checkbox
-                checked={!!todo.completed}
-                onCheckedChange={(checked) =>
-                  toggleTodo(todo.id, todo.completed)
+          <Swipeable
+            ref={(ref) => (swipeableRefs.current[todo.id] = ref)}
+            renderRightActions={() => (
+              <RightActions onDelete={() => deleteTodo(todo.id)} />
+            )}
+            rightThreshold={40}
+            friction={2}
+            onSwipeableOpen={() => {
+              Object.entries(swipeableRefs.current).forEach(([id, ref]) => {
+                if (id !== todo.id.toString() && ref) {
+                  ref.close();
                 }
-              />
-              {/* <View className="w-5 h-5 rounded border border-border mr-3 items-center justify-center">
-                {todo.completed ? <Text className="text-sm">✓</Text> : null}
-              </View> */}
-              <Text
-                className={
-                  todo.completed ? "line-through text-muted-foreground" : ""
-                }
+              });
+            }}
+          >
+            <View className="flex-row items-center px-4 bg-background">
+              <Pressable
+                onPress={() => toggleTodo(todo.id, todo.completed)}
+                className="flex-1 flex-row items-center py-3 gap-4"
               >
-                {todo.name}
-              </Text>
-            </Pressable>
-            <Button
-              variant="destructive"
-              size="sm"
-              onPress={() => deleteTodo(todo.id)}
-            >
-              <Text>Delete</Text>
-            </Button>
-          </View>
+                <Checkbox
+                  checked={!!todo.completed}
+                  onCheckedChange={() => toggleTodo(todo.id, todo.completed)}
+                />
+                <Text
+                  className={
+                    todo.completed ? "line-through text-muted-foreground" : ""
+                  }
+                >
+                  {todo.name}
+                </Text>
+              </Pressable>
+            </View>
+          </Swipeable>
         )}
         contentContainerStyle={
           list.todos.length === 0 ? { flex: 1 } : undefined
@@ -143,7 +157,7 @@ export default function List() {
             blurOnSubmit={false}
           />
           <Button onPress={addTodo}>
-            <Text>Add</Text>
+            <Text>Add1</Text>
           </Button>
         </View>
       </View>

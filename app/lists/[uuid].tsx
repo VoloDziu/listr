@@ -9,7 +9,9 @@ import {
   Pressable,
   View,
 } from "react-native";
-import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
+import Swipeable, {
+  SwipeableMethods,
+} from "react-native-gesture-handler/ReanimatedSwipeable";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Input } from "~/components/ui/input";
@@ -34,7 +36,7 @@ export default function List() {
       })
     | null
   >(null);
-  const swipeableRefs = useRef<{ [key: string]: Swipeable | null }>({});
+  const swipeableRefs = useRef<{ [key: string]: SwipeableMethods | null }>({});
 
   async function loadList() {
     const result = await db.query.listsTable.findFirst({

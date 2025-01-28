@@ -18,13 +18,18 @@ import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
 import { db } from "~/lib/db";
 
-const RightActions = ({ onDelete }: { onDelete: () => void }) => {
+function RightActions({ onDelete }: { onDelete: () => void }) {
   return (
-    <Button onPress={onDelete} variant="destructive" size="sm">
-      <Text className="text-foreground">Delete</Text>
-    </Button>
+    <View className="flex-row items-stretch">
+      <Pressable
+        onPress={onDelete}
+        className="bg-destructive px-3 items-center justify-center basis-[5rem]"
+      >
+        <Text>Delete</Text>
+      </Pressable>
+    </View>
   );
-};
+}
 
 export default function List() {
   const { uuid } = useLocalSearchParams();
@@ -82,6 +87,8 @@ export default function List() {
     return null;
   }
 
+  const hasCompletedTodos = list.todos.some((todo) => todo.completed);
+
   return (
     <KeyboardAvoidingView
       keyboardVerticalOffset={64}
@@ -89,11 +96,16 @@ export default function List() {
       className="flex-1 bg-background"
     >
       <View className="p-4 border-b border-border">
-        <View className="flex-row items-center gap-2">
-          <Button variant="ghost" size="icon" onPress={() => router.back()}>
-            <Text>←</Text>
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center gap-2">
+            <Button variant="ghost" size="icon" onPress={() => router.back()}>
+              <Text>←</Text>
+            </Button>
+            <Text className="text-lg font-medium">{list.name}</Text>
+          </View>
+          <Button variant="secondary" size="sm" onPress={() => router.back()}>
+            <Text>{hasCompletedTodos ? "Archive" : "View Archive"}</Text>
           </Button>
-          <Text className="text-lg font-medium">{list.name}</Text>
         </View>
       </View>
 
@@ -159,7 +171,7 @@ export default function List() {
             blurOnSubmit={false}
           />
           <Button onPress={addTodo}>
-            <Text>Add1</Text>
+            <Text>Add</Text>
           </Button>
         </View>
       </View>

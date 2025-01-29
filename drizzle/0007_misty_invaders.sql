@@ -1,0 +1,1 @@
+ALTER TABLE `lists_table` RENAME COLUMN "parentList" TO "parentListId";

@@ -1,19 +1,17 @@
-import { relations, sql } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import { int, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const listsTable = sqliteTable("lists_table", {
   id: int().primaryKey({ autoIncrement: true }),
   name: text().notNull(),
-  archivedAt: text()
-    .notNull()
-    .default(sql`(current_timestamp)`),
-  parentList: int(),
+  archivedAt: int({ mode: "timestamp" }),
+  parentListId: int(),
 });
 
 export const listsRelations = relations(listsTable, ({ many, one }) => ({
   todos: many(todosTable),
   parentList: one(listsTable, {
-    fields: [listsTable.parentList],
+    fields: [listsTable.parentListId],
     references: [listsTable.id],
   }),
 }));

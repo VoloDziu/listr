@@ -35,12 +35,15 @@ export default function List() {
   const { uuid } = useLocalSearchParams();
   const [newTodo, setNewTodo] = useState("");
   const [list, setList] = useState<
-    | undefined
-    | (typeof listsTable.$inferSelect & {
-        todos: (typeof todosTable.$inferSelect)[];
-      })
-    | null
-  >(null);
+    typeof listsTable.$inferSelect & {
+      todos: (typeof todosTable.$inferSelect)[];
+    }
+  >();
+  const [archived, setArchived] = useState<
+    (typeof listsTable.$inferSelect & {
+      todos: (typeof todosTable.$inferSelect)[];
+    })[]
+  >([]);
   const swipeableRefs = useRef<{ [key: string]: SwipeableMethods | null }>({});
 
   async function loadList() {
@@ -50,7 +53,14 @@ export default function List() {
         todos: true,
       },
     });
+    const relations = await db.query.listsTable.findMany({
+      where: eq(listsTable.parentListId, Number(result?.id)),
+      with: {
+        todos: true,
+      },
+    });
     setList(result);
+    setArchived(relations);
   }
 
   async function addTodo() {
@@ -59,7 +69,7 @@ export default function List() {
     await db.insert(todosTable).values({
       name: newTodo.trim(),
       listId: list.id,
-      completed: 0,
+      completed: false,
     });
 
     setNewTodo("");
@@ -71,10 +81,10 @@ export default function List() {
     loadList();
   }
 
-  async function toggleTodo(todoId: number, completed: number) {
+  async function toggleTodo(todoId: number, completed: boolean) {
     await db
       .update(todosTable)
-      .set({ completed: completed ? 0 : 1 })
+      .set({ completed: !completed })
       .where(eq(todosTable.id, todoId));
     loadList();
   }
@@ -84,7 +94,7 @@ export default function List() {
   }, [uuid]);
 
   if (!list) {
-    return null;
+    return <View className="flex-1 bg-background"></View>;
   }
 
   const hasCompletedTodos = list.todos.some((todo) => todo.completed);
@@ -103,9 +113,18 @@ export default function List() {
             </Button>
             <Text className="text-lg font-medium">{list.name}</Text>
           </View>
-          <Button variant="secondary" size="sm" onPress={() => router.back()}>
-            <Text>{hasCompletedTodos ? "Archive" : "View Archive"}</Text>
-          </Button>
+
+          {hasCompletedTodos && (
+            <Button variant="secondary" size="sm" onPress={() => router.back()}>
+              <Text>Archive</Text>
+            </Button>
+          )}
+
+          {!hasCompletedTodos && archived.length > 0 && (
+            <Button variant="secondary" size="sm" onPress={() => router.back()}>
+              <Text>View Archive</Text>
+            </Button>
+          )}
         </View>
       </View>
 

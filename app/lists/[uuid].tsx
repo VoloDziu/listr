@@ -1,5 +1,4 @@
 import { listsTable, todosTable } from "@/db/schema";
-import { eq, inArray } from "drizzle-orm";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -12,11 +11,18 @@ import {
 import Swipeable, {
   SwipeableMethods,
 } from "react-native-gesture-handler/ReanimatedSwipeable";
+import {
+  archiveCompletedTodos,
+  createTodo,
+  deleteTodo,
+  getArchivedLists,
+  getList,
+  toggleTodo,
+} from "~/lib/actions";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
-import { db } from "~/lib/db";
 
 function RightActions({ onDelete }: { onDelete: () => void }) {
   return (
@@ -47,74 +53,32 @@ export default function List() {
   const swipeableRefs = useRef<{ [key: string]: SwipeableMethods | null }>({});
 
   async function loadList() {
-    const result = await db.query.listsTable.findFirst({
-      where: eq(listsTable.id, Number(uuid)),
-      with: {
-        todos: true,
-      },
-    });
-    const relations = await db.query.listsTable.findMany({
-      where: eq(listsTable.parentListId, Number(result?.id)),
-      with: {
-        todos: true,
-      },
-    });
+    const result = await getList(Number(uuid));
+    const archivedLists = await getArchivedLists(Number(result?.id));
     setList(result);
-    setArchived(relations);
+    setArchived(archivedLists);
   }
 
-  async function addTodo() {
+  async function handleAddTodo() {
     if (!newTodo.trim() || !list) return;
-
-    await db.insert(todosTable).values({
-      name: newTodo.trim(),
-      listId: list.id,
-      completed: false,
-    });
-
+    await createTodo(newTodo, list.id);
     setNewTodo("");
     loadList();
   }
 
-  async function deleteTodo(todoId: number) {
-    await db.delete(todosTable).where(eq(todosTable.id, todoId));
+  async function handleDeleteTodo(todoId: number) {
+    await deleteTodo(todoId);
     loadList();
   }
 
-  async function toggleTodo(todoId: number, completed: boolean) {
-    await db
-      .update(todosTable)
-      .set({ completed: !completed })
-      .where(eq(todosTable.id, todoId));
+  async function handleToggleTodo(todoId: number, completed: boolean) {
+    await toggleTodo(todoId, completed);
     loadList();
   }
 
-  async function archiveCompletedTodos() {
+  async function handleArchive() {
     if (!list) return;
-
-    const [archivedList] = await db
-      .insert(listsTable)
-      .values({
-        name: `${list.name} (${new Date().toLocaleDateString()})`,
-        parentListId: list.id,
-        archivedAt: new Date(),
-      })
-      .returning();
-
-    // Move completed todos to archive list
-    const completedTodos = list.todos.filter((todo) => todo.completed);
-    if (completedTodos.length > 0) {
-      await db
-        .update(todosTable)
-        .set({ listId: archivedList.id })
-        .where(
-          inArray(
-            todosTable.id,
-            completedTodos.map((todo) => todo.id),
-          ),
-        );
-    }
-
+    await archiveCompletedTodos(list);
     loadList();
   }
 
@@ -148,11 +112,7 @@ export default function List() {
           </View>
 
           {hasCompletedTodos && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onPress={archiveCompletedTodos}
-            >
+            <Button variant="secondary" size="sm" onPress={handleArchive}>
               <Text>Archive</Text>
             </Button>
           )}
@@ -177,7 +137,7 @@ export default function List() {
           <Swipeable
             ref={(ref) => (swipeableRefs.current[todo.id] = ref)}
             renderRightActions={() => (
-              <RightActions onDelete={() => deleteTodo(todo.id)} />
+              <RightActions onDelete={() => handleDeleteTodo(todo.id)} />
             )}
             rightThreshold={40}
             friction={2}
@@ -191,12 +151,12 @@ export default function List() {
           >
             <View className="flex-row items-center px-4 bg-background">
               <Pressable
-                onPress={() => toggleTodo(todo.id, todo.completed)}
+                onPress={() => handleToggleTodo(todo.id, todo.completed)}
                 className="flex-1 flex-row items-center py-3 gap-4"
               >
                 <Checkbox
                   checked={!!todo.completed}
-                  onCheckedChange={() => toggleTodo(todo.id, todo.completed)}
+                  onCheckedChange={() => handleToggleTodo(todo.id, todo.completed)}
                 />
                 <Text
                   className={
@@ -226,11 +186,11 @@ export default function List() {
             placeholder="Add a todo..."
             value={newTodo}
             onChangeText={setNewTodo}
-            onSubmitEditing={addTodo}
+            onSubmitEditing={handleAddTodo}
             returnKeyType="done"
             blurOnSubmit={false}
           />
-          <Button onPress={addTodo}>
+          <Button onPress={handleAddTodo}>
             <Text>Add</Text>
           </Button>
         </View>

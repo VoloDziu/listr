@@ -1,10 +1,19 @@
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, isNull } from "drizzle-orm";
 import { listsTable, todosTable } from "../db/schema";
 import { db } from "./db";
 
 export async function getList(id: number) {
   return await db.query.listsTable.findFirst({
     where: eq(listsTable.id, id),
+    with: {
+      todos: true,
+    },
+  });
+}
+
+export async function getNonArchivedLists() {
+  return await db.query.listsTable.findMany({
+    where: isNull(listsTable.parentListId),
     with: {
       todos: true,
     },

@@ -5,6 +5,7 @@ import { useCallback, useState } from "react";
 import { FlatList, View } from "react-native";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
+import { getNonArchivedLists } from "~/lib/actions";
 import { db } from "~/lib/db";
 
 type ListItem = typeof listsTable.$inferSelect;
@@ -22,10 +23,10 @@ function EmptyList() {
 export default function HomeScreen() {
   const [items, setItems] = useState<ListItem[] | null>(null);
 
-  const loadItems = useCallback(async () => {
-    const lists = await db.query.listsTable.findMany();
-    setItems(lists);
-  }, []);
+  const loadItems = async () => {
+    const result = await getNonArchivedLists();
+    setItems(result);
+  };
 
   useFocusEffect(
     useCallback(() => {

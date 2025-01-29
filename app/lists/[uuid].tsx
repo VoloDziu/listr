@@ -1,5 +1,5 @@
 import { listsTable, todosTable } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -89,6 +89,39 @@ export default function List() {
     loadList();
   }
 
+  async function archiveCompletedTodos() {
+    if (!list) return;
+
+    const [archivedList] = await db
+      .insert(listsTable)
+      .values({
+        name: `${list.name} (${new Date().toLocaleDateString()})`,
+        parentListId: list.id,
+        archivedAt: new Date(),
+      })
+      .returning();
+
+    // Move completed todos to archive list
+    const completedTodos = list.todos.filter((todo) => todo.completed);
+    if (completedTodos.length > 0) {
+      await db
+        .update(todosTable)
+        .set({ listId: archivedList.id })
+        .where(
+          inArray(
+            todosTable.id,
+            completedTodos.map((todo) => todo.id),
+          ),
+        );
+    }
+
+    loadList();
+  }
+
+  async function viewArchive(archivedListId: number) {
+    router.push(`/lists/${archivedListId}`);
+  }
+
   useEffect(() => {
     loadList();
   }, [uuid]);
@@ -115,13 +148,21 @@ export default function List() {
           </View>
 
           {hasCompletedTodos && (
-            <Button variant="secondary" size="sm" onPress={() => router.back()}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onPress={archiveCompletedTodos}
+            >
               <Text>Archive</Text>
             </Button>
           )}
 
           {!hasCompletedTodos && archived.length > 0 && (
-            <Button variant="secondary" size="sm" onPress={() => router.back()}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onPress={() => viewArchive(archived[0].id)}
+            >
               <Text>View Archive</Text>
             </Button>
           )}

@@ -11,6 +11,10 @@ import {
 import Swipeable, {
   SwipeableMethods,
 } from "react-native-gesture-handler/ReanimatedSwipeable";
+import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
+import { Input } from "~/components/ui/input";
+import { Text } from "~/components/ui/text";
 import {
   archiveCompletedTodos,
   createTodo,
@@ -19,10 +23,6 @@ import {
   getList,
   toggleTodo,
 } from "~/lib/actions";
-import { Button } from "~/components/ui/button";
-import { Checkbox } from "~/components/ui/checkbox";
-import { Input } from "~/components/ui/input";
-import { Text } from "~/components/ui/text";
 
 function RightActions({ onDelete }: { onDelete: () => void }) {
   return (
@@ -121,7 +121,7 @@ export default function List() {
             <Button
               variant="secondary"
               size="sm"
-              onPress={() => viewArchive(archived[0].id)}
+              onPress={() => router.push(`/lists/${uuid}/archive`)}
             >
               <Text>View Archive</Text>
             </Button>
@@ -156,7 +156,9 @@ export default function List() {
               >
                 <Checkbox
                   checked={!!todo.completed}
-                  onCheckedChange={() => handleToggleTodo(todo.id, todo.completed)}
+                  onCheckedChange={() =>
+                    handleToggleTodo(todo.id, todo.completed)
+                  }
                 />
                 <Text
                   className={

@@ -1,14 +1,11 @@
-import { listsTable } from "@/db/schema";
-import { eq } from "drizzle-orm";
-import { router, useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
+import { useMutation, useQuery } from "convex/react";
+import { router } from "expo-router";
+import { useCallback } from "react";
 import { FlatList, Pressable, View } from "react-native";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
-import { getNonArchivedLists } from "~/lib/actions";
-import { db } from "~/lib/db";
-
-type ListItem = typeof listsTable.$inferSelect;
+import { api } from "~/convex/_generated/api";
+import { Doc } from "~/convex/_generated/dataModel";
 
 function EmptyList() {
   return (
@@ -21,35 +18,25 @@ function EmptyList() {
 }
 
 export default function HomeScreen() {
-  const [items, setItems] = useState<ListItem[] | null>(null);
+  const items = useQuery(api.lists.getNonArchivedLists);
 
-  const loadItems = async () => {
-    const result = await getNonArchivedLists();
-    setItems(result);
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-      loadItems();
-    }, [loadItems]),
-  );
-
-  async function remove(id: number) {
-    await db.delete(listsTable).where(eq(listsTable.id, id));
-    await loadItems();
-  }
+  const remove = useMutation(api.lists.deleteList);
 
   const renderItem = useCallback(
-    ({ item }: { item: ListItem }) => (
+    ({ item }: { item: Doc<"lists"> }) => (
       <View className="flex-row mt-4 items-center pr-4 border border-border rounded">
         <Pressable
           className="flex-grow pl-4 py-5"
-          onPress={() => router.push(`/lists/${item.id}`)}
+          onPress={() => router.push(`/lists/${item._id}`)}
         >
           <Text className="text-lg">{item.name}</Text>
         </Pressable>
 
-        <Button size="sm" variant="destructive" onPress={() => remove(item.id)}>
+        <Button
+          size="sm"
+          variant="destructive"
+          onPress={() => remove({ id: item._id })}
+        >
           <Text>delete</Text>
         </Button>
       </View>
@@ -74,7 +61,7 @@ export default function HomeScreen() {
           <FlatList
             data={items ?? []}
             renderItem={renderItem}
-            keyExtractor={(item) => item.id.toString()}
+            keyExtractor={(item) => item._id}
           />
 
           <View className="p-4 shrink-0">

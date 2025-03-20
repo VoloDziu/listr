@@ -1,4 +1,3 @@
-import { listsTable, todosTable } from "@/db/schema";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -15,14 +14,6 @@ import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
-import {
-  archiveCompletedTodos,
-  createTodo,
-  deleteTodo,
-  getArchivedLists,
-  getList,
-  toggleTodo,
-} from "~/lib/actions";
 
 function RightActions({ onDelete }: { onDelete: () => void }) {
   return (

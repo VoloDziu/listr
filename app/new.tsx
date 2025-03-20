@@ -1,15 +1,16 @@
-import { listsTable } from "@/db/schema";
+import { useMutation } from "convex/react";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useRef, useState } from "react";
 import { KeyboardAvoidingView, Platform, TextInput, View } from "react-native";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
-import { db } from "~/lib/db";
+import { api } from "~/convex/_generated/api";
 
 export default function NewItemScreen() {
   const [name, setName] = useState("");
   const inputRef = useRef<TextInput>(null);
+  const insert = useMutation(api.lists.createList);
 
   useFocusEffect(
     useCallback(() => {
@@ -24,9 +25,7 @@ export default function NewItemScreen() {
   async function add() {
     if (!name.trim()) return;
 
-    await db.insert(listsTable).values({
-      name: name.trim(),
-    });
+    await insert({ name: name.trim() });
 
     router.dismissTo("/");
   }

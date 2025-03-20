@@ -2,7 +2,7 @@ import { listsTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { FlatList, View } from "react-native";
+import { FlatList, Pressable, View } from "react-native";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 import { getNonArchivedLists } from "~/lib/actions";
@@ -41,16 +41,16 @@ export default function HomeScreen() {
 
   const renderItem = useCallback(
     ({ item }: { item: ListItem }) => (
-      <View className="flex-row items-center px-4 py-2">
-        <Button
-          variant="link"
-          className="flex-grow"
+      <View className="flex-row mt-4 items-center pr-4 border border-border rounded">
+        <Pressable
+          className="flex-grow pl-4 py-5"
           onPress={() => router.push(`/lists/${item.id}`)}
         >
-          <Text>{item.name}</Text>
-        </Button>
+          <Text className="text-lg">{item.name}</Text>
+        </Pressable>
+
         <Button size="sm" variant="destructive" onPress={() => remove(item.id)}>
-          <Text>D</Text>
+          <Text>delete</Text>
         </Button>
       </View>
     ),
@@ -59,6 +59,14 @@ export default function HomeScreen() {
 
   return (
     <View className="flex-1 bg-background">
+      <View className="p-4 border-b border-border">
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center gap-2">
+            <Text className="text-lg font-medium">Your lists</Text>
+          </View>
+        </View>
+      </View>
+
       {items?.length === 0 && <EmptyList />}
 
       {items?.length && items.length > 0 && (
@@ -71,7 +79,7 @@ export default function HomeScreen() {
 
           <View className="p-4 shrink-0">
             <Button onPress={() => router.push("/new")}>
-              <Text>Add 243</Text>
+              <Text>Add</Text>
             </Button>
           </View>
         </>

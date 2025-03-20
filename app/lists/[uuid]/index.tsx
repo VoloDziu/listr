@@ -86,7 +86,11 @@ export default function List() {
       <View className="p-4 border-b border-border">
         <View className="flex-row items-center justify-between">
           <View className="flex-row items-center gap-2">
-            <Button variant="ghost" size="icon" onPress={() => router.back()}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onPress={() => router.dismissTo("/")}
+            >
               <Text>←</Text>
             </Button>
             <Text className="text-lg font-medium">{list?.name}</Text>

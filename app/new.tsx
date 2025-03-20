@@ -25,9 +25,9 @@ export default function NewItemScreen() {
   async function add() {
     if (!name.trim()) return;
 
-    await insert({ name: name.trim() });
+    const newListId = await insert({ name: name.trim() });
 
-    router.dismissTo("/");
+    router.push(`/lists/${newListId}`);
   }
 
   return (

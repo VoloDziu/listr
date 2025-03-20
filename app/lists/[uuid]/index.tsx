@@ -1,5 +1,6 @@
+import { useMutation, useQuery } from "convex/react";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -14,6 +15,8 @@ import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
+import { api } from "~/convex/_generated/api";
+import { Id } from "~/convex/_generated/dataModel";
 
 function RightActions({ onDelete }: { onDelete: () => void }) {
   return (
@@ -31,61 +34,48 @@ function RightActions({ onDelete }: { onDelete: () => void }) {
 export default function List() {
   const { uuid } = useLocalSearchParams();
   const [newTodo, setNewTodo] = useState("");
-  const [list, setList] = useState<
-    typeof listsTable.$inferSelect & {
-      todos: (typeof todosTable.$inferSelect)[];
-    }
-  >();
-  const [archived, setArchived] = useState<
-    (typeof listsTable.$inferSelect & {
-      todos: (typeof todosTable.$inferSelect)[];
-    })[]
-  >([]);
+
+  const list = useQuery(api.lists.getList, { id: uuid as Id<"lists"> });
+  const archived = useQuery(api.lists.getArchivedLists, {
+    parentListId: uuid as Id<"lists">,
+  });
+  const todos = useQuery(api.todos.getTodos, { listId: uuid as Id<"lists"> });
+
+  const createTodo = useMutation(api.todos.createTodo);
+  const deleteTodo = useMutation(api.todos.deleteTodo);
+  const toggleTodo = useMutation(api.todos.toggleTodo);
+  const archiveCompletedTodos = useMutation(api.todos.archiveCompletedTodos);
+
   const swipeableRefs = useRef<{ [key: string]: SwipeableMethods | null }>({});
 
-  async function loadList() {
-    const result = await getList(Number(uuid));
-    const archivedLists = await getArchivedLists(Number(result?.id));
-    setList(result);
-    setArchived(archivedLists);
-  }
+  const hasCompletedTodos = todos?.some((todo) => todo.completed);
 
   async function handleAddTodo() {
     if (!newTodo.trim() || !list) return;
-    await createTodo(newTodo, list.id);
+    await createTodo({ name: newTodo.trim(), listId: list._id });
     setNewTodo("");
-    loadList();
   }
 
-  async function handleDeleteTodo(todoId: number) {
-    await deleteTodo(todoId);
-    loadList();
+  async function handleDeleteTodo(todoId: Id<"todos">) {
+    await deleteTodo({ todoId });
   }
 
-  async function handleToggleTodo(todoId: number, completed: boolean) {
-    await toggleTodo(todoId, completed);
-    loadList();
+  async function handleToggleTodo(todoId: Id<"todos">) {
+    await toggleTodo({ todoId });
   }
 
   async function handleArchive() {
     if (!list) return;
-    await archiveCompletedTodos(list);
-    loadList();
+    await archiveCompletedTodos({ listId: list._id });
   }
 
-  async function viewArchive(archivedListId: number) {
-    router.push(`/lists/${archivedListId}`);
+  if (list === undefined || todos === undefined || archived === undefined) {
+    return (
+      <View className="flex-1 bg-background">
+        <Text>Loading...</Text>
+      </View>
+    );
   }
-
-  useEffect(() => {
-    loadList();
-  }, [uuid]);
-
-  if (!list) {
-    return <View className="flex-1 bg-background"></View>;
-  }
-
-  const hasCompletedTodos = list.todos.some((todo) => todo.completed);
 
   return (
     <KeyboardAvoidingView
@@ -99,7 +89,7 @@ export default function List() {
             <Button variant="ghost" size="icon" onPress={() => router.back()}>
               <Text>←</Text>
             </Button>
-            <Text className="text-lg font-medium">{list.name}</Text>
+            <Text className="text-lg font-medium">{list?.name}</Text>
           </View>
 
           {hasCompletedTodos && (
@@ -108,7 +98,7 @@ export default function List() {
             </Button>
           )}
 
-          {!hasCompletedTodos && archived.length > 0 && (
+          {!hasCompletedTodos && archived && archived.length > 0 && (
             <Button
               variant="secondary"
               size="sm"
@@ -121,20 +111,20 @@ export default function List() {
       </View>
 
       <FlatList
-        data={list.todos ?? []}
-        keyExtractor={(todo) => todo.id.toString()}
+        data={todos ?? []}
+        keyExtractor={(todo) => todo._id.toString()}
         className="py-2"
         renderItem={({ item: todo }) => (
           <Swipeable
-            ref={(ref) => (swipeableRefs.current[todo.id] = ref)}
+            ref={(ref) => (swipeableRefs.current[todo._id] = ref)}
             renderRightActions={() => (
-              <RightActions onDelete={() => handleDeleteTodo(todo.id)} />
+              <RightActions onDelete={() => handleDeleteTodo(todo._id)} />
             )}
             rightThreshold={40}
             friction={2}
             onSwipeableOpen={() => {
               Object.entries(swipeableRefs.current).forEach(([id, ref]) => {
-                if (id !== todo.id.toString() && ref) {
+                if (id !== todo._id.toString() && ref) {
                   ref.close();
                 }
               });
@@ -142,14 +132,12 @@ export default function List() {
           >
             <View className="flex-row items-center px-4 bg-background">
               <Pressable
-                onPress={() => handleToggleTodo(todo.id, todo.completed)}
+                onPress={() => handleToggleTodo(todo._id)}
                 className="flex-1 flex-row items-center py-3 gap-4"
               >
                 <Checkbox
                   checked={!!todo.completed}
-                  onCheckedChange={() =>
-                    handleToggleTodo(todo.id, todo.completed)
-                  }
+                  onCheckedChange={() => handleToggleTodo(todo._id)}
                 />
                 <Text
                   className={
@@ -162,9 +150,7 @@ export default function List() {
             </View>
           </Swipeable>
         )}
-        contentContainerStyle={
-          list.todos.length === 0 ? { flex: 1 } : undefined
-        }
+        contentContainerStyle={todos.length === 0 ? { flex: 1 } : undefined}
         ListEmptyComponent={() => (
           <View className="flex-1 items-center justify-center">
             <Text className="text-muted-foreground">No todos yet</Text>

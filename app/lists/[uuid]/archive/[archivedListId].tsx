@@ -1,28 +1,29 @@
-import { listsTable, todosTable } from "@/db/schema";
+import { useQuery } from "convex/react";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { FlatList, View } from "react-native";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Text } from "~/components/ui/text";
-import { getList } from "~/lib/actions";
+import { api } from "~/convex/_generated/api";
+import { Id } from "~/convex/_generated/dataModel";
 
 export default function List() {
   const { archivedListId } = useLocalSearchParams();
-  const [list, setList] = useState<
-    typeof listsTable.$inferSelect & {
-      todos: (typeof todosTable.$inferSelect)[];
-    }
-  >();
+  const list = useQuery(api.lists.getList, {
+    id: archivedListId as Id<"lists">,
+  });
+  const todos = useQuery(api.todos.getTodos, {
+    listId: archivedListId as Id<"lists">,
+  });
 
-  async function loadList() {
-    const result = await getList(Number(archivedListId));
-    setList(result);
+  if (list === undefined || todos === undefined) {
+    return (
+      <View className="flex-1 bg-background">
+        <Text>Loading...</Text>
+      </View>
+    );
   }
-
-  useEffect(() => {
-    loadList();
-  }, [archivedListId]);
 
   if (!list) {
     return <View className="flex-1 bg-background"></View>;
@@ -42,8 +43,8 @@ export default function List() {
       </View>
 
       <FlatList
-        data={list.todos ?? []}
-        keyExtractor={(todo) => todo.id.toString()}
+        data={todos}
+        keyExtractor={(todo) => todo._id.toString()}
         className="py-2"
         renderItem={({ item: todo }) => (
           <View className="flex-row items-center px-4 bg-background">

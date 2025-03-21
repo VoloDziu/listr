@@ -12,7 +12,7 @@ export function Header(props: {
 }) {
   return (
     <View className="p-4 border-b border-border">
-      <View className="flex-row items-center justify-between gap-10 ">
+      <View className="flex-row items-center justify-between gap-2">
         <View className="flex-row items-center gap-2 grow shrink">
           {props.onBack && (
             <Button

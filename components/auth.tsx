@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Text } from "~/components/ui/text";
 
 export default function Auth() {
-  const [activeTab, setActiveTab] = React.useState("sign-up");
+  const [activeTab, setActiveTab] = React.useState("sign-in");
   const [error, setError] = React.useState(false);
 
   const {
@@ -19,11 +19,7 @@ export default function Auth() {
     setActive: setSignInActive,
     isLoaded: signInIsLoaded,
   } = useSignIn();
-  const {
-    isLoaded: SignUpIsLoaded,
-    signUp,
-    setActive: signUpSetActive,
-  } = useSignUp();
+  const { isLoaded: SignUpIsLoaded, signUp } = useSignUp();
   const router = useRouter();
 
   const [emailAddress, setEmailAddress] = React.useState("");
@@ -102,11 +98,11 @@ export default function Auth() {
           </Text>
 
           <TabsList className="flex-row w-full mb-5">
-            <TabsTrigger value="sign-up" className="flex-1">
-              <Text>Sign up</Text>
-            </TabsTrigger>
             <TabsTrigger value="sign-in" className="flex-1">
               <Text>Sign in</Text>
+            </TabsTrigger>
+            <TabsTrigger value="sign-up" className="flex-1">
+              <Text>Sign up</Text>
             </TabsTrigger>
           </TabsList>
 

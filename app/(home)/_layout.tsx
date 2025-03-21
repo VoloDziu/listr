@@ -1,7 +1,7 @@
 import { useAuth } from "@clerk/clerk-expo";
-import { Redirect } from "expo-router";
 import { Stack } from "expo-router/stack";
 import { View } from "react-native";
+import Auth from "~/components/auth";
 
 export default function Layout() {
   const { isSignedIn, isLoaded } = useAuth();
@@ -11,7 +11,7 @@ export default function Layout() {
   }
 
   if (!isSignedIn) {
-    return <Redirect href={"/auth"} />;
+    return <Auth />;
   }
 
   return <Stack screenOptions={{ headerShown: false }} />;

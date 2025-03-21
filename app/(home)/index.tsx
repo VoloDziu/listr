@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import { FlatList, Pressable, View } from "react-native";
 import { Header } from "~/components/header";
 import { Button } from "~/components/ui/button";
+import { User } from "~/components/ui/icons";
 import { Text } from "~/components/ui/text";
 import { api } from "~/convex/_generated/api";
 import { Doc } from "~/convex/_generated/dataModel";
@@ -60,7 +61,20 @@ export default function HomeScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <Header title="Your Lists" />
+      <Header
+        title="Your Lists"
+        actions={
+          <Button
+            size="icon"
+            variant="ghost"
+            onPress={() => router.push("/profile")}
+          >
+            <Text asChild>
+              <User />
+            </Text>
+          </Button>
+        }
+      />
 
       {items?.length === 0 && <EmptyList />}
 

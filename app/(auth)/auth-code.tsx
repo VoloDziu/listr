@@ -1,16 +1,15 @@
-import { useMutation } from "convex/react";
+import { useSignUp } from "@clerk/clerk-expo";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useRef, useState } from "react";
 import { KeyboardAvoidingView, Platform, TextInput, View } from "react-native";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
-import { api } from "~/convex/_generated/api";
 
-export default function NewItemScreen() {
-  const [name, setName] = useState("");
+export default function AuthCode() {
+  const { isLoaded, signUp, setActive } = useSignUp();
+  const [code, setCode] = useState("");
   const inputRef = useRef<TextInput>(null);
-  const insert = useMutation(api.lists.createList);
 
   useFocusEffect(
     useCallback(() => {
@@ -22,13 +21,32 @@ export default function NewItemScreen() {
     }, []),
   );
 
-  async function add() {
-    if (!name.trim()) return;
+  // Handle submission of verification form
+  const onVerifyPress = async () => {
+    if (!isLoaded) return;
 
-    const newListId = await insert({ name: name.trim() });
+    try {
+      // Use the code the user provided to attempt verification
+      const signUpAttempt = await signUp.attemptEmailAddressVerification({
+        code,
+      });
 
-    router.push(`/lists/${newListId}`);
-  }
+      // If verification was completed, set the session to active
+      // and redirect the user
+      if (signUpAttempt.status === "complete") {
+        await setActive({ session: signUpAttempt.createdSessionId });
+        router.replace("/");
+      } else {
+        // If the status is not complete, check why. User may need to
+        // complete further steps.
+        console.error(JSON.stringify(signUpAttempt, null, 2));
+      }
+    } catch (err) {
+      // See https://clerk.com/docs/custom-flows/error-handling
+      // for more info on error handling
+      console.error(JSON.stringify(err, null, 2));
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -42,7 +60,7 @@ export default function NewItemScreen() {
             <Button variant="ghost" size="icon" onPress={() => router.back()}>
               <Text>←</Text>
             </Button>
-            <Text className="text-lg font-medium">New List</Text>
+            <Text className="text-lg font-medium">Verification Code</Text>
           </View>
         </View>
       </View>
@@ -51,17 +69,17 @@ export default function NewItemScreen() {
         <Text className="mb-2">Name</Text>
         <Input
           ref={inputRef}
-          value={name}
-          onChangeText={setName}
+          value={code}
+          onChangeText={setCode}
           placeholder="Enter name"
           returnKeyType="done"
-          onSubmitEditing={add}
+          onSubmitEditing={onVerifyPress}
         />
       </View>
 
       <View className="p-4">
-        <Button onPress={add}>
-          <Text>Add</Text>
+        <Button onPress={onVerifyPress}>
+          <Text>Submit</Text>
         </Button>
       </View>
     </KeyboardAvoidingView>

@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from "convex/react";
 import { router } from "expo-router";
 import { FlatList, Pressable, View } from "react-native";
+import { Header } from "~/components/header";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 import { api } from "~/convex/_generated/api";
@@ -26,10 +27,16 @@ function Item(props: { item: Doc<"lists"> }) {
   return (
     <View className="flex-row mt-4 items-center pr-4 border border-border rounded">
       <Pressable
-        className="flex-grow pl-4 py-5"
+        className="flex-grow pl-4 py-5 shrink gap-1"
         onPress={() => router.push(`/lists/${props.item._id}`)}
       >
-        <Text className="text-lg font-semibold">{props.item.name}</Text>
+        <Text
+          className="text-lg font-semibold"
+          numberOfLines={1}
+          ellipsizeMode="tail"
+        >
+          {props.item.name}
+        </Text>
         <Text className="text-sm">
           {completedTodosCount ? completedTodosCount + "/" : ""}
           {totalTodosCount} todos
@@ -39,6 +46,7 @@ function Item(props: { item: Doc<"lists"> }) {
       <Button
         size="sm"
         variant="destructive"
+        className="shrink-0"
         onPress={() => remove({ id: props.item._id })}
       >
         <Text>delete</Text>
@@ -52,13 +60,7 @@ export default function HomeScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <View className="p-4 border-b border-border">
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center gap-2">
-            <Text className="text-lg font-medium">Your lists</Text>
-          </View>
-        </View>
-      </View>
+      <Header title="Your Lists" />
 
       {items?.length === 0 && <EmptyList />}
 

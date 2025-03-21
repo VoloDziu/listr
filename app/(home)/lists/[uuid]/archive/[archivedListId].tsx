@@ -2,7 +2,7 @@ import { useQuery } from "convex/react";
 import { router, useLocalSearchParams } from "expo-router";
 import React from "react";
 import { FlatList, View } from "react-native";
-import { Button } from "~/components/ui/button";
+import { Header } from "~/components/header";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Text } from "~/components/ui/text";
 import { api } from "~/convex/_generated/api";
@@ -31,16 +31,7 @@ export default function List() {
 
   return (
     <View className="flex-1 bg-background">
-      <View className="p-4 border-b border-border">
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center gap-2">
-            <Button variant="ghost" size="icon" onPress={() => router.back()}>
-              <Text>←</Text>
-            </Button>
-            <Text className="text-lg font-medium">{list.name}</Text>
-          </View>
-        </View>
-      </View>
+      <Header title={list.name} onBack={() => router.back()} />
 
       <FlatList
         data={todos}

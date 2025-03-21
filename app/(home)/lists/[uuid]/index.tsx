@@ -11,6 +11,7 @@ import {
 import Swipeable, {
   SwipeableMethods,
 } from "react-native-gesture-handler/ReanimatedSwipeable";
+import { Header } from "~/components/header";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Input } from "~/components/ui/input";
@@ -83,36 +84,29 @@ export default function List() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       className="flex-1 bg-background"
     >
-      <View className="p-4 border-b border-border">
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onPress={() => router.dismissTo("/")}
-            >
-              <Text>←</Text>
-            </Button>
-            <Text className="text-lg font-medium">{list?.name}</Text>
-          </View>
+      <Header
+        title={list?.name ?? ""}
+        onBack={() => router.dismissTo("/")}
+        actions={
+          <>
+            {hasCompletedTodos && (
+              <Button variant="secondary" size="sm" onPress={handleArchive}>
+                <Text>Archive</Text>
+              </Button>
+            )}
 
-          {hasCompletedTodos && (
-            <Button variant="secondary" size="sm" onPress={handleArchive}>
-              <Text>Archive</Text>
-            </Button>
-          )}
-
-          {!hasCompletedTodos && archived && archived.length > 0 && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onPress={() => router.push(`/lists/${uuid}/archive`)}
-            >
-              <Text>View Archive</Text>
-            </Button>
-          )}
-        </View>
-      </View>
+            {!hasCompletedTodos && archived && archived.length > 0 && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onPress={() => router.push(`/lists/${uuid}/archive`)}
+              >
+                <Text>View History</Text>
+              </Button>
+            )}
+          </>
+        }
+      />
 
       <FlatList
         data={todos ?? []}

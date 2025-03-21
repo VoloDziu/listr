@@ -2,7 +2,7 @@ import { useQuery } from "convex/react";
 import { router, useLocalSearchParams } from "expo-router";
 import React from "react";
 import { FlatList, Pressable, View } from "react-native";
-import { Button } from "~/components/ui/button";
+import { Header } from "~/components/header";
 import { Text } from "~/components/ui/text";
 import { api } from "~/convex/_generated/api";
 import { Doc, Id } from "~/convex/_generated/dataModel";
@@ -28,16 +28,10 @@ export default function Archive() {
 
   return (
     <View className="flex-1 bg-background">
-      <View className="p-4 border-b border-border">
-        <View className="flex-row items-center gap-2">
-          <Button variant="ghost" size="icon" onPress={() => router.back()}>
-            <Text>←</Text>
-          </Button>
-          <Text className="text-lg font-medium">
-            {parentList?.name} Archive
-          </Text>
-        </View>
-      </View>
+      <Header
+        title={parentList?.name + " History"}
+        onBack={() => router.back()}
+      />
 
       <FlatList
         data={archivedLists}

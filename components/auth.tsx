@@ -131,6 +131,7 @@ export default function Auth() {
                       setPassword(value);
                       setError(false);
                     }}
+                    onSubmitEditing={onSignUpPress}
                   />
                 </View>
               </CardContent>
@@ -168,6 +169,7 @@ export default function Auth() {
                       setPassword(value);
                       setError(false);
                     }}
+                    onSubmitEditing={onSignInPress}
                   />
                 </View>
               </CardContent>

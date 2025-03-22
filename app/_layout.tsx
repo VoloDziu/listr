@@ -1,6 +1,7 @@
 import { tokenCache } from "@/lib/cache";
-import { ClerkProvider } from "@clerk/clerk-expo";
-import { ConvexProvider, ConvexReactClient } from "convex/react";
+import { ClerkProvider, useAuth } from "@clerk/clerk-expo";
+import { ConvexReactClient } from "convex/react";
+import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { Stack } from "expo-router";
 import React from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -23,13 +24,13 @@ export default function RootLayout() {
 
   return (
     <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
-      <ConvexProvider client={convex}>
+      <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
         <GestureHandlerRootView style={{ flex: 1 }}>
           <SafeAreaView className="flex-1 bg-background">
             <Stack screenOptions={{ headerShown: false }} />
           </SafeAreaView>
         </GestureHandlerRootView>
-      </ConvexProvider>
+      </ConvexProviderWithClerk>
     </ClerkProvider>
   );
 }

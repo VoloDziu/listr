@@ -6,7 +6,8 @@ export default defineSchema({
     name: v.string(),
     archivedAt: v.optional(v.number()),
     parentListId: v.optional(v.id("lists")),
-  }).index("by_parent", ["parentListId"]),
+    userId: v.string(),
+  }).index("by_user", ["userId"]),
   todos: defineTable({
     name: v.string(),
     listId: v.id("lists"),

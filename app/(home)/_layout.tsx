@@ -7,7 +7,7 @@ export default function Layout() {
   const { isSignedIn, isLoaded } = useAuth();
 
   if (!isLoaded) {
-    return <View className="flex-1 bg-background"></View>;
+    return <View className="flex-1 bg-background" />;
   }
 
   if (!isSignedIn) {

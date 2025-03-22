@@ -76,9 +76,9 @@ export default function HomeScreen() {
         }
       />
 
-      {items?.length === 0 && <EmptyList />}
+      {items?.length === 0 ? <EmptyList /> : null}
 
-      {items?.length && items.length > 0 && (
+      {items?.length && items.length > 0 ? (
         <>
           <FlatList
             data={items ?? []}
@@ -92,7 +92,7 @@ export default function HomeScreen() {
             </Button>
           </View>
         </>
-      )}
+      ) : null}
     </View>
   );
 }

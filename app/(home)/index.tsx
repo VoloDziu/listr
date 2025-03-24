@@ -26,7 +26,7 @@ function Item(props: { item: Doc<"lists"> }) {
   const totalTodosCount = todos?.length;
 
   return (
-    <View className="flex-row mt-4 items-center pr-4 border border-border rounded">
+    <View className="mx-4 flex-row mt-4 items-center pr-4 border border-border rounded">
       <Pressable
         className="flex-grow pl-4 py-5 shrink gap-1"
         onPress={() => router.push(`/lists/${props.item._id}`)}

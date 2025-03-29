@@ -1,4 +1,4 @@
-import { Check, ChevronLeft, Settings, User } from "lucide-react-native";
+import { Check, ChevronLeft, Settings, Trash, User } from "lucide-react-native";
 import { iconWithClassName } from "~/lib/iconWithClassName";
 
 iconWithClassName(Check);
@@ -12,3 +12,6 @@ export { ChevronLeft };
 
 iconWithClassName(Settings);
 export { Settings };
+
+iconWithClassName(Trash);
+export { Trash };

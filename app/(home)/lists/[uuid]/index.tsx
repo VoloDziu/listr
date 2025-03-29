@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "convex/react";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -8,12 +8,11 @@ import {
   Pressable,
   View,
 } from "react-native";
-import Swipeable, {
-  SwipeableMethods,
-} from "react-native-gesture-handler/ReanimatedSwipeable";
+import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
+import { Footer } from "~/components/footer";
 import { Header } from "~/components/header";
+import { ListItem } from "~/components/list-item";
 import { Button } from "~/components/ui/button";
-import { Checkbox } from "~/components/ui/checkbox";
 import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
 import { api } from "~/convex/_generated/api";
@@ -26,7 +25,7 @@ function RightActions({ onDelete }: { onDelete: () => void }) {
         onPress={onDelete}
         className="bg-destructive px-3 items-center justify-center basis-[5rem]"
       >
-        <Text>Delete</Text>
+        <Text className="text-background">Delete</Text>
       </Pressable>
     </View>
   );
@@ -46,8 +45,6 @@ export default function List() {
   const deleteTodo = useMutation(api.todos.deleteTodo);
   const toggleTodo = useMutation(api.todos.toggleTodo);
   const archiveCompletedTodos = useMutation(api.todos.archiveCompletedTodos);
-
-  const swipeableRefs = useRef<{ [key: string]: SwipeableMethods | null }>({});
 
   const hasCompletedTodos = todos?.some((todo) => todo.completed);
 
@@ -85,7 +82,7 @@ export default function List() {
       className="flex-1 bg-background"
     >
       <Header
-        title={list?.name ?? ""}
+        title={<Header.Title>{list?.name}</Header.Title>}
         onBack={() => router.dismissTo("/")}
         actions={
           <>
@@ -95,7 +92,7 @@ export default function List() {
               </Button>
             )}
 
-            {!hasCompletedTodos && archived && archived.length > 0 && (
+            {!hasCompletedTodos && (
               <Button
                 variant="secondary"
                 size="sm"
@@ -112,55 +109,30 @@ export default function List() {
         data={todos ?? []}
         keyExtractor={(todo) => todo._id.toString()}
         className="py-2"
-        renderItem={({ item: todo }) => (
+        renderItem={({ item }) => (
           <Swipeable
-            ref={(ref) => (swipeableRefs.current[todo._id] = ref)}
             renderRightActions={() => (
-              <RightActions onDelete={() => handleDeleteTodo(todo._id)} />
+              <RightActions onDelete={() => handleDeleteTodo(item._id)} />
             )}
             rightThreshold={40}
             friction={2}
-            onSwipeableOpen={() => {
-              Object.entries(swipeableRefs.current).forEach(([id, ref]) => {
-                if (id !== todo._id.toString() && ref) {
-                  ref.close();
-                }
-              });
-            }}
           >
-            <View className="flex-row items-center px-4 bg-background">
-              <Pressable
-                onPress={() => handleToggleTodo(todo._id)}
-                className="flex-1 flex-row items-center py-3 gap-4"
-              >
-                <Checkbox
-                  checked={!!todo.completed}
-                  onCheckedChange={() => handleToggleTodo(todo._id)}
-                />
-                <Text
-                  className={
-                    todo.completed ? "line-through text-muted-foreground" : ""
-                  }
-                >
-                  {todo.name}
-                </Text>
-              </Pressable>
-            </View>
+            <ListItem item={item} onPress={() => handleToggleTodo(item._id)} />
           </Swipeable>
         )}
         contentContainerStyle={todos.length === 0 ? { flex: 1 } : undefined}
         ListEmptyComponent={() => (
           <View className="flex-1 items-center justify-center">
-            <Text className="text-muted-foreground">No todos yet</Text>
+            <Text className="text-muted-foreground">No items yet</Text>
           </View>
         )}
       />
 
-      <View className="p-4 border-t border-border">
+      <Footer>
         <View className="flex-row gap-2">
           <Input
             className="flex-1"
-            placeholder="Add a todo..."
+            placeholder="Add an item..."
             value={newTodo}
             onChangeText={setNewTodo}
             onSubmitEditing={handleAddTodo}
@@ -171,7 +143,7 @@ export default function List() {
             <Text>Add</Text>
           </Button>
         </View>
-      </View>
+      </Footer>
     </KeyboardAvoidingView>
   );
 }

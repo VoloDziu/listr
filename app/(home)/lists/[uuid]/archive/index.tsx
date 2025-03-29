@@ -29,7 +29,7 @@ export default function Archive() {
   return (
     <View className="flex-1 bg-background">
       <Header
-        title={parentList?.name + " History"}
+        title={<Header.Title>{parentList?.name + " History"}</Header.Title>}
         onBack={() => router.back()}
       />
 
@@ -45,7 +45,7 @@ export default function Archive() {
         }
         ListEmptyComponent={() => (
           <View className="flex-1 items-center justify-center">
-            <Text className="text-muted-foreground">No archived lists yet</Text>
+            <Text className="text-muted-foreground">No history yet</Text>
           </View>
         )}
       />
@@ -61,13 +61,12 @@ function Preview(props: { parentListId: Id<"lists">; list: Doc<"lists"> }) {
       onPress={() =>
         router.push(`/lists/${props.parentListId}/archive/${props.list._id}`)
       }
-      className="flex-row items-center px-4 py-3 gap-4"
+      className="flex-row items-center pr-4 pl-16 py-3 gap-4"
     >
       <View className="flex-1">
-        <Text>{props.list.name}</Text>
-        <Text className="text-sm text-muted-foreground">
-          {todos?.length} todos •{" "}
-          {new Date(props.list.archivedAt!).toLocaleDateString()}
+        <Text className="text-lg">{props.list.name}</Text>
+        <Text className="text-base text-muted-foreground">
+          {todos?.length} items
         </Text>
       </View>
     </Pressable>

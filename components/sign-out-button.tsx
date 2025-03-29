@@ -1,6 +1,6 @@
 import { useClerk } from "@clerk/clerk-expo";
-import { Text } from "react-native";
 import { Button } from "./ui/button";
+import { Text } from "./ui/text";
 
 export const SignOutButton = () => {
   // Use `useClerk()` to access the `signOut()` function

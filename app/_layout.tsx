@@ -6,7 +6,6 @@ import { Stack } from "expo-router";
 import React from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
-import { SafeAreaView } from "react-native-safe-area-context";
 import "../global.css";
 
 const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
@@ -26,9 +25,7 @@ export default function RootLayout() {
     <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
       <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
         <GestureHandlerRootView style={{ flex: 1 }}>
-          <SafeAreaView className="flex-1 bg-background">
-            <Stack screenOptions={{ headerShown: false }} />
-          </SafeAreaView>
+          <Stack screenOptions={{ headerShown: false }} />
         </GestureHandlerRootView>
       </ConvexProviderWithClerk>
     </ClerkProvider>

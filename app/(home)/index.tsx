@@ -1,9 +1,12 @@
 import { useMutation, useQuery } from "convex/react";
 import { router } from "expo-router";
 import { FlatList, Pressable, View } from "react-native";
+import { Footer } from "~/components/footer";
 import { Header } from "~/components/header";
+import { Logo } from "~/components/logo";
 import { Button } from "~/components/ui/button";
-import { User } from "~/components/ui/icons";
+import { Card } from "~/components/ui/card";
+import { Settings, Trash } from "~/components/ui/icons";
 import { Text } from "~/components/ui/text";
 import { api } from "~/convex/_generated/api";
 import { Doc } from "~/convex/_generated/dataModel";
@@ -26,9 +29,9 @@ function Item(props: { item: Doc<"lists"> }) {
   const totalTodosCount = todos?.length;
 
   return (
-    <View className="mx-4 flex-row mt-4 items-center pr-4 border border-border rounded">
+    <Card className="flex-row items-center p-4">
       <Pressable
-        className="flex-grow pl-4 py-5 shrink gap-1"
+        className="flex-grow shrink gap-1"
         onPress={() => router.push(`/lists/${props.item._id}`)}
       >
         <Text
@@ -38,21 +41,23 @@ function Item(props: { item: Doc<"lists"> }) {
         >
           {props.item.name}
         </Text>
-        <Text className="text-sm">
+        <Text className="text-base text-muted-foreground">
           {completedTodosCount ? completedTodosCount + "/" : ""}
-          {totalTodosCount} todos
+          {totalTodosCount} items
         </Text>
       </Pressable>
 
       <Button
-        size="sm"
-        variant="destructive"
+        variant="ghost"
+        size="icon"
         className="shrink-0"
         onPress={() => remove({ id: props.item._id })}
       >
-        <Text>delete</Text>
+        <Text asChild>
+          <Trash className="size-5" />
+        </Text>
       </Button>
-    </View>
+    </Card>
   );
 }
 
@@ -62,7 +67,7 @@ export default function HomeScreen() {
   return (
     <View className="flex-1 bg-background">
       <Header
-        title="Your Lists"
+        title={<Logo />}
         actions={
           <Button
             size="icon"
@@ -70,7 +75,7 @@ export default function HomeScreen() {
             onPress={() => router.push("/profile")}
           >
             <Text asChild>
-              <User />
+              <Settings />
             </Text>
           </Button>
         }
@@ -84,13 +89,14 @@ export default function HomeScreen() {
             data={items ?? []}
             renderItem={(item) => <Item item={item.item} />}
             keyExtractor={(item) => item._id}
+            contentContainerClassName="py-4 px-4 gap-4 flex-col"
           />
 
-          <View className="p-4 shrink-0">
+          <Footer>
             <Button onPress={() => router.push("/new")}>
               <Text>Add</Text>
             </Button>
-          </View>
+          </Footer>
         </>
       ) : null}
     </View>

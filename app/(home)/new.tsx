@@ -37,7 +37,10 @@ export default function NewItemScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       className="flex-1 bg-background"
     >
-      <Header title="New List" onBack={() => router.dismissTo("/")} />
+      <Header
+        title={<Header.Title>New List</Header.Title>}
+        onBack={() => router.dismissTo("/")}
+      />
 
       <View className="flex-grow p-4">
         <Text className="mb-2">Name</Text>

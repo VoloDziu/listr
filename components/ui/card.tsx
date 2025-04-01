@@ -33,7 +33,7 @@ const CardTitle = React.forwardRef<TextRef, TextProps>(
       aria-level={3}
       ref={ref}
       className={cn(
-        "text-2xl text-card-foreground font-semibold leading-none tracking-tight",
+        "text-lg text-card-foreground font-semibold leading-none tracking-tight",
         className,
       )}
       {...props}
@@ -46,7 +46,7 @@ const CardDescription = React.forwardRef<TextRef, TextProps>(
   ({ className, ...props }, ref) => (
     <Text
       ref={ref}
-      className={cn("text-sm text-muted-foreground", className)}
+      className={cn("text-base text-muted-foreground", className)}
       {...props}
     />
   ),

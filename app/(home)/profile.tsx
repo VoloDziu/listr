@@ -3,8 +3,13 @@ import { router } from "expo-router";
 import { View } from "react-native";
 import { Header } from "~/components/header";
 import { SignOutButton } from "~/components/sign-out-button";
-import { Card, CardFooter, CardHeader } from "~/components/ui/card";
-import { Text } from "~/components/ui/text";
+import {
+  Card,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 
 export default function ProfileScreen() {
   const { isLoaded, user } = useUser();
@@ -23,12 +28,15 @@ export default function ProfileScreen() {
       <View className="p-6">
         <Card>
           <CardHeader>
-            <Text className="text-lg" numberOfLines={1}>
+            <CardTitle className="text-lg" numberOfLines={1}>
               {user?.emailAddresses[0].emailAddress}
-            </Text>
-            <Text className="text-base text-muted-foreground" numberOfLines={1}>
+            </CardTitle>
+            <CardDescription
+              className="text-base text-muted-foreground"
+              numberOfLines={1}
+            >
               Joined {user?.createdAt?.toLocaleDateString()}
-            </Text>
+            </CardDescription>
           </CardHeader>
 
           <CardFooter>

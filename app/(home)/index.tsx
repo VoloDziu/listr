@@ -5,7 +5,7 @@ import { Footer } from "~/components/footer";
 import { Header } from "~/components/header";
 import { Logo } from "~/components/logo";
 import { Button } from "~/components/ui/button";
-import { Card } from "~/components/ui/card";
+import { Card, CardDescription, CardTitle } from "~/components/ui/card";
 import { Settings, Trash } from "~/components/ui/icons";
 import { Text } from "~/components/ui/text";
 import { api } from "~/convex/_generated/api";
@@ -34,17 +34,17 @@ function Item(props: { item: Doc<"lists"> }) {
         className="flex-grow shrink gap-1"
         onPress={() => router.push(`/lists/${props.item._id}`)}
       >
-        <Text
+        <CardTitle
           className="text-lg font-semibold"
           numberOfLines={1}
           ellipsizeMode="tail"
         >
           {props.item.name}
-        </Text>
-        <Text className="text-base text-muted-foreground">
+        </CardTitle>
+        <CardDescription className="text-base text-muted-foreground">
           {completedTodosCount ? completedTodosCount + "/" : ""}
           {totalTodosCount} items
-        </Text>
+        </CardDescription>
       </Pressable>
 
       <Button

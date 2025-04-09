@@ -17,7 +17,7 @@ export default function NewItemScreen() {
     useCallback(() => {
       const timeout = setTimeout(() => {
         inputRef.current?.focus();
-      }, 100);
+      }, 0);
 
       return () => clearTimeout(timeout);
     }, []),

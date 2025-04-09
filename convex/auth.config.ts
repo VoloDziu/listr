@@ -1,7 +1,7 @@
 export default {
   providers: [
     {
-      domain: "https://discrete-llama-1.clerk.accounts.dev",
+      domain: process.env.EXPO_PUBLIC_CLERK_CONVEX_ISSUER!,
       applicationID: "convex",
     },
   ],
